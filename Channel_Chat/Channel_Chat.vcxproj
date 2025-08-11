@@ -20,9 +20,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChannelManager.h" />
+    <ClInclude Include="ClientHandler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChannelManager.cpp" />
+    <ClCompile Include="ClientHandler.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

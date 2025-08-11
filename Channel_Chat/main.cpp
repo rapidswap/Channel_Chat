@@ -1,8 +1,12 @@
 #include <iostream>
-#include "ChannelManager.h"
+#include <Winsock2.h>
+#include <WS2tcpip.h>
+#include <thread>
+#include <vector>
+#include "ClientHandler.h"
 
-#include <winsock2.h>
 #pragma comment(lib,"Ws2_32.lib")
+#define PORT 12345
 
 int main() {
 	WSADATA wsaData;
@@ -10,33 +14,22 @@ int main() {
 		std::cerr << "WSAStartup falied!" << std::endl;
 		return 1;
 	}
-	std::cout << "WSAStartup Success!" << std::endl;
 	
-	std::cout << "Getting ChannelManager instance..." << std::endl;
-	ChannelManager& manager = ChannelManager::getInstance();
+	int server_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (server_socket == INVALID_SOCKET) {
+		std::cerr << "Socket creation failed with error: " << WSAGetLastError() << std::endl;
+		WSACleanup();
+		return 1;
+	}
 
-	std::cout << "시뮬레이션 클라이언트 연결..." << std::endl;
-	manager.onClientConnected(1001);
-	manager.setClientNickname(1001, "userA");
-	manager.joinChannel(1001, "general");
+	sockaddr_in server_addr;
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr = INADDR_ANY;
+	server_addr.sin_port = htons(PORT);
 
-	manager.onClientConnected(1002);
-	manager.setClientNickname(1002, "userB");
-	manager.joinChannel(1002, "general");
-
-	manager.onClientConnected(1003);
-	manager.setClientNickname(1003, "userB");
-	manager.joinChannel(1003, "general");
-
-	std::cout << manager.getLobbyInfo() << std::endl;
-
-	std::cout << "시뮬레이션 클라이언트 접속 종료..." << std::endl;
-	manager.onClientDisconnected(1002);
-
-	std::cout << manager.getLobbyInfo() << std::endl;
-
-	WSACleanup();
-	std::cout << "WSACleanup Success!" << std::endl;
+	if (bind(server_socket, (SOCKADDR*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR) {
+		std::cerr<<"Bind failed with error: "
+	}
 
 	return 0;
 }
