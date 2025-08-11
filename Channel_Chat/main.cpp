@@ -28,8 +28,39 @@ int main() {
 	server_addr.sin_port = htons(PORT);
 
 	if (bind(server_socket, (SOCKADDR*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR) {
-		std::cerr<<"Bind failed with error: "
+		std::cerr << "Bind failed with error: " << WSAGetLastError() << std::endl;
+		closesocket(server_socket);
+		WSACleanup();
+		return 1;
 	}
+
+	if (listen(server_socket, SOMAXCONN) == SOCKET_ERROR) {
+		std::cerr << "Listen failed with error: " << WSAGetLastError() << std::endl;
+		closesocket(server_socket);
+		WSACleanup();
+		return 1;
+	}
+
+	std::cout << "Server is listening on port " << PORT << std::endl;
+
+	while (true) {
+		int client_socket = accept(server_socket, NULL, NULL);
+		if (client_socket == INVALID_SOCKET) {
+			std::cerr << "Accept failed with error: " << WSAGetLastError() << std::endl;
+			continue;
+		}
+
+		std::cout << "New Client Connected. Socket: " << client_socket << std::endl;
+
+		std::thread client_thread([](int socket) {
+			ClientHandler handler(socket);
+			handler.run();
+			}, client_socket);
+		client_thread.detach(); // 계속 다음 접속 받기
+	}
+
+	closesocket(server_socket);
+	WSACleanup();
 
 	return 0;
 }

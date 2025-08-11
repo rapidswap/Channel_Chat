@@ -53,18 +53,19 @@ void ChannelManager::leaveChannel(int client_socket) {
 
 std::string ChannelManager::getLobbyInfo() {
 	std::lock_guard<std::mutex> lock(mutex_);
-	std::string info = "\n--- Lobby ---\nAvailable Channel:\n";
+	std::string info = "\n--- Lobby ---\nAvailable Channels:\n";
 	if (channels_.empty()) {
-		info += " (No Channels available yet)\n";
+		info += "  (No channels available yet)\n";
 	}
 	else {
 		for (const auto& [name, members] : channels_) {
 			info += "  - " + name + " (" + std::to_string(members.size()) + " users)\n";
 		}
 	}
-	info += "--------------\n";
+	info += "----------------\n";
 	return info;
 }
+
 
 ClientInfo ChannelManager::getClientInfo(int client_socket) {
 	std::lock_guard<std::mutex> lock(mutex_);

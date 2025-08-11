@@ -44,7 +44,16 @@ void ClientHandler::run() {
 			break;
 		}
 
+		std::cout << "DEBUG_HEX: ";
+		for (int i = 0; i < bytes_received; ++i) {
+			printf("%02x ", (unsigned char)buffer[i]);
+		}
+		std::cout << std::endl;
+
 		std::string message(buffer, strcspn(buffer, "\r\n"));
+
+		std::cout << "DEBUG_MSG: [" << message << "]" << std::endl;
+
 
 		if (message.rfind("/join ", 0) == 0) {
 			std::string channel_to_join = message.substr(6);
@@ -69,7 +78,7 @@ void ClientHandler::run() {
 		}
 		else if (message == "/exit") {
 			std::string current_channel = manager.getClientInfo(client_socket_).current_channel;
-			if (current_channel.empty()) {
+			if (!current_channel.empty()) {
 				std::string leave_broadcast_msg = "[" + current_channel + "] " + nickname + " has left. \n";
 				manager.leaveChannel(client_socket_);
 				auto members = manager.getChannelMembers(current_channel);
@@ -80,6 +89,10 @@ void ClientHandler::run() {
 				send(client_socket_, exit_feedback.c_str(), exit_feedback.length(), 0);
 			}
 		}
+		else if (message == "/refresh") {
+			std::string refresh_feedback = "You refrash mainform.\n" + manager.getLobbyInfo();
+			send(client_socket_, refresh_feedback.c_str(), refresh_feedback.length(), 0);
+		}
 		else {
 			ClientInfo info = manager.getClientInfo(client_socket_);
 			if (!info.current_channel.empty()) {
@@ -87,7 +100,7 @@ void ClientHandler::run() {
 				auto members = manager.getChannelMembers(info.current_channel);
 				for (int member_socket : members) {
 					if (member_socket != client_socket_) {
-						send(member_socket, message.c_str(), message.length(), 0);
+						send(member_socket, chat_msg.c_str(), chat_msg.length(), 0);
 					}
 				}
 			}
